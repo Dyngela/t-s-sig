@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:sig/map_page.dart';
+import 'package:sig/pages/map_page.dart';
 
-import 'map_marker_model.dart';
+import 'mapping/map_marker_model.dart';
 
 
 void main() {

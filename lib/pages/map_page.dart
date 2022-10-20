@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:location/location.dart';
-import 'package:sig/app_constant.dart';
-import 'package:sig/map_marker_model.dart';
-
+import 'package:sig/constant/app_constant.dart';
+import 'package:sig/mapping/PointOfInterests.dart';
 import 'InterestDetails.dart';
 
 class MapPage extends StatefulWidget {
@@ -36,70 +34,117 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         backgroundColor: const Color.fromARGB(255, 33, 32, 32),
         title: const Text('LA ROUTE DU BONHEUR'),
       ),
-      body: Stack(
-        children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-              minZoom: 5,
-              maxZoom: 18,
-              zoom: 11,
-              center: currentLocation,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+      body: FutureBuilder<List<PointOfInterests>>(
+        future: fetchPointOfInterests
+          ("http://localhost:8000/api/v1/restaurants"),
+        builder: (BuildContext context, AsyncSnapshot<List<PointOfInterests>> snapshot) {
+          List<Widget> children = [];
+          if (snapshot.hasError) {
+            children = <Widget>[
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
               ),
-              MarkerLayer(
-                markers: [
-                  for (int i = 0; i < mapMarkers.length; i++)
-                    Marker(
-                      height: 40,
-                      width: 40,
-                      point: mapMarkers[i].location ?? AppConstants.myLocation,
-                      builder: (_) {
-                        return GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              popupVisible = true;
-                              selectedIndex = i;
-                            });
-                            await Future.delayed(
-                                const Duration(milliseconds: 100), () {});
-
-                            currentLocation = mapMarkers[i].location ??
-                                AppConstants.myLocation;
-                            _animatedMapMove(currentLocation);
-                            // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
-                            // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
-                            // pageController.animateToPage(
-                            pageController.jumpToPage(
-                              i,
-                              // duration: const Duration(milliseconds: 500),
-                              // curve: Curves.easeInOut,
-                            );
-                          },
-                          child: AnimatedScale(
-                            duration: const Duration(milliseconds: 500),
-                            scale: selectedIndex == i ? 1 : 0.7,
-                            child: AnimatedOpacity(
-                              duration: const Duration(milliseconds: 500),
-                              opacity: selectedIndex == i ? 1 : 0.5,
-                              child: SvgPicture.asset(
-                                'assets/icons/map_marker.svg',
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              ),
+            ];
+          }
+          else if (snapshot.hasData) {
+            print("my snapshot");
+            print(snapshot.data);
+            Stack(
+              children: [
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    minZoom: 5,
+                    maxZoom: 18,
+                    zoom: 11,
+                    center: currentLocation,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.app',
                     ),
-                ],
+                    MarkerLayer(
+                      markers: [
+                        for (int i = 0; i < snapshot.data!.length; i++)
+                          Marker(
+                            height: 40,
+                            width: 40,
+                            point: snapshot.data![i].latLong ??
+                                AppConstants.myLocation,
+                            builder: (_) {
+                              return GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    popupVisible = true;
+                                    selectedIndex = i;
+                                  });
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 100), () {});
+
+                                  currentLocation = snapshot.data![i].latLong ??
+                                      AppConstants.myLocation;
+                                  _animatedMapMove(currentLocation);
+                                  // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
+                                  // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
+                                  // pageController.animateToPage(
+                                  pageController.jumpToPage(
+                                    i,
+                                    // duration: const Duration(milliseconds: 500),
+                                    // curve: Curves.easeInOut,
+                                  );
+                                },
+                                child: AnimatedScale(
+                                  duration: const Duration(milliseconds: 500),
+                                  scale: selectedIndex == i ? 1 : 0.7,
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 500),
+                                    opacity: selectedIndex == i ? 1 : 0.5,
+                                    child: SvgPicture.asset(
+                                      // snapshot.data![i].markerSVGModel,
+                                      "assets/icons/map_marker.svg",
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                //todo uncomment
+                // bottomPopup(snapshot),
+              ],
+            );
+          }
+          else {
+            children = const <Widget>[
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(),
               ),
-            ],
-          ),
-          bottomPopup(),
-        ],
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Awaiting result...'),
+              ),
+            ];
+          }
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: children,
+            ),
+          );
+        },
       ),
     );
   }
@@ -140,7 +185,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     controller.forward();
   }
 
-  Visibility bottomPopup() {
+  Visibility bottomPopup(AsyncSnapshot<List<PointOfInterests>> snapshot) {
     return (Visibility(
         visible: popupVisible,
         child: Positioned(
@@ -153,13 +198,13 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             onPageChanged: (value) {
               selectedIndex = value;
               currentLocation =
-                  mapMarkers[value].location ?? AppConstants.myLocation;
+                  snapshot.data![value].latLong ?? AppConstants.myLocation;
               _animatedMapMove(currentLocation);
               setState(() {});
             },
-            itemCount: mapMarkers.length,
+            itemCount: snapshot.data!.length,
             itemBuilder: (_, index) {
-              final item = mapMarkers[index];
+              final item = snapshot.data![index];
               return Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: Card(
@@ -186,7 +231,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   scrollDirection: Axis.horizontal,
-                                  itemCount: item.rating,
+                                  itemCount:
+                                      5, // todo add it to models eventually to be check with manager
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     return const Icon(
@@ -229,7 +275,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.asset(
-                                item.image ?? '',
+                                item.imageLink ?? '',
                                 fit: BoxFit.cover,
                               ),
                             ),

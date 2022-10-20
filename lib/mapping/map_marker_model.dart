@@ -16,7 +16,7 @@ class MapMarker {
   });
 }
 
-final mapMarkers = [
+final maapMarkers = [
   MapMarker(
       image: 'assets/images/restaurant_1.jpg',
       title: 'Alexander The Great Restaurant',
