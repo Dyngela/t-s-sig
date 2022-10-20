@@ -25,7 +25,7 @@ class PointOfInterests {
 
   @override
   String toString() {
-    return "${latLong}";
+    return "$latLong";
   }
 
   factory PointOfInterests.fromJson(Map<String, dynamic> json) {
@@ -34,14 +34,10 @@ class PointOfInterests {
     var longitude = json[AppConstants.longitude];
     return PointOfInterests(
       latLong: LatLng(latitude, longitude),
-      // description: json[AppConstants.mapPoints.description] ?? "",
-      // imageLink: json[AppConstants.mapPoints.imageLink] ?? "",
-      // title: json[AppConstants.mapPoints.title] ?? "",
-      // address: json[AppConstants.address] ?? "",
-      description: "descrip",
-      imageLink: "image link",
-      title: "title",
-      address: "ZZ",
+      description: json[AppConstants.mapPoints.description] ?? "",
+      imageLink: "assets/images/restaurant_5.jpg",
+      title: json[AppConstants.mapPoints.title] ?? "",
+      address: json[AppConstants.address] ?? "",
       markerSVGModel: "assets/icons/map_marker.svg",
     );
   }
@@ -53,9 +49,7 @@ Future<List<PointOfInterests>> fetchPointOfInterests(String apiUrl) async {
 
   if (response.statusCode == 200) {
     final parsed = json.decode(response.body).cast<Map<String, dynamic>>();
-    var returned = parsed.map<PointOfInterests>((json) => PointOfInterests.fromJson(json)).toList();
-    print(returned);
-    return returned;
+    return parsed.map<PointOfInterests>((json) => PointOfInterests.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load markers');
   }

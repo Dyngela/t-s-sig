@@ -56,73 +56,76 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             print("my snapshot");
             print(snapshot.data);
             children = <Widget>[
-              Stack(
-                children: [
-                  FlutterMap(
-                    mapController: mapController,
-                    options: MapOptions(
-                      minZoom: 5,
-                      maxZoom: 18,
-                      zoom: 11,
-                      center: currentLocation,
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
+              Expanded(
+                child:
+                  Stack(
+                  children: [
+                    FlutterMap(
+                      mapController: mapController,
+                      options: MapOptions(
+                        minZoom: 5,
+                        maxZoom: 18,
+                        zoom: 11,
+                        center: currentLocation,
                       ),
-                      MarkerLayer(
-                        markers: [
-                          for (int i = 0; i < snapshot.data!.length; i++)
-                            Marker(
-                              height: 40,
-                              width: 40,
-                              point: snapshot.data![i].latLong,
-                              builder: (_) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                    setState(() {
-                                      popupVisible = true;
-                                      selectedIndex = i;
-                                    });
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 100), () {});
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            for (int i = 0; i < snapshot.data!.length; i++)
+                              Marker(
+                                height: 40,
+                                width: 40,
+                                point: snapshot.data![i].latLong,
+                                builder: (_) {
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      setState(() {
+                                        popupVisible = true;
+                                        selectedIndex = i;
+                                      });
+                                      await Future.delayed(
+                                          const Duration(milliseconds: 100), () {});
 
-                                    currentLocation = snapshot.data![i].latLong ??
-                                        AppConstants.myLocation;
-                                    _animatedMapMove(currentLocation);
-                                    // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
-                                    // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
-                                    // pageController.animateToPage(
-                                    pageController.jumpToPage(
-                                      i,
-                                      // duration: const Duration(milliseconds: 500),
-                                      // curve: Curves.easeInOut,
-                                    );
-                                  },
-                                  child: AnimatedScale(
-                                    duration: const Duration(milliseconds: 500),
-                                    scale: selectedIndex == i ? 1 : 0.7,
-                                    child: AnimatedOpacity(
+                                      currentLocation = snapshot.data![i].latLong;
+                                      _animatedMapMove(currentLocation);
+                                      // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
+                                      // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
+                                      // pageController.animateToPage(
+                                      pageController.jumpToPage(
+                                        i,
+                                        // duration: const Duration(milliseconds: 500),
+                                        // curve: Curves.easeInOut,
+                                      );
+                                    },
+                                    child: AnimatedScale(
                                       duration: const Duration(milliseconds: 500),
-                                      opacity: selectedIndex == i ? 1 : 0.5,
-                                      child: SvgPicture.asset(
-                                        // snapshot.data![i].markerSVGModel,
-                                        "assets/icons/map_marker.svg",
+                                      scale: selectedIndex == i ? 1 : 0.7,
+                                      child: AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 500),
+                                        opacity: selectedIndex == i ? 1 : 0.5,
+                                        child: SvgPicture.asset(
+                                          // snapshot.data![i].markerSVGModel,
+                                          "assets/icons/map_marker.svg",
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  //todo uncomment
-                  // bottomPopup(snapshot),
-                ],
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    //todo uncomment
+                    bottomPopup(snapshot),
+                  ],
+                )
+                ,
               )
             ];
           }
@@ -199,7 +202,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             onPageChanged: (value) {
               selectedIndex = value;
               currentLocation =
-                  snapshot.data![value].latLong ?? AppConstants.myLocation;
+                  snapshot.data![value].latLong;
               _animatedMapMove(currentLocation);
               setState(() {});
             },
@@ -233,7 +236,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                   padding: EdgeInsets.zero,
                                   scrollDirection: Axis.horizontal,
                                   itemCount:
-                                      5, // todo add it to models eventually to be check with manager
+                                      5, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     return const Icon(
@@ -249,7 +252,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item.title ?? '',
+                                      item.title,
                                       style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -257,7 +260,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      item.address ?? '',
+                                      item.address,
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey,
@@ -276,7 +279,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.asset(
-                                item.imageLink ?? '',
+                                item.imageLink,
                                 fit: BoxFit.cover,
                               ),
                             ),
