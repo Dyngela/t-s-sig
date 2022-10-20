@@ -55,75 +55,76 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           else if (snapshot.hasData) {
             print("my snapshot");
             print(snapshot.data);
-            Stack(
-              children: [
-                FlutterMap(
-                  mapController: mapController,
-                  options: MapOptions(
-                    minZoom: 5,
-                    maxZoom: 18,
-                    zoom: 11,
-                    center: currentLocation,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.app',
+            children = <Widget>[
+              Stack(
+                children: [
+                  FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      minZoom: 5,
+                      maxZoom: 18,
+                      zoom: 11,
+                      center: currentLocation,
                     ),
-                    MarkerLayer(
-                      markers: [
-                        for (int i = 0; i < snapshot.data!.length; i++)
-                          Marker(
-                            height: 40,
-                            width: 40,
-                            point: snapshot.data![i].latLong ??
-                                AppConstants.myLocation,
-                            builder: (_) {
-                              return GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    popupVisible = true;
-                                    selectedIndex = i;
-                                  });
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 100), () {});
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          for (int i = 0; i < snapshot.data!.length; i++)
+                            Marker(
+                              height: 40,
+                              width: 40,
+                              point: snapshot.data![i].latLong,
+                              builder: (_) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    setState(() {
+                                      popupVisible = true;
+                                      selectedIndex = i;
+                                    });
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 100), () {});
 
-                                  currentLocation = snapshot.data![i].latLong ??
-                                      AppConstants.myLocation;
-                                  _animatedMapMove(currentLocation);
-                                  // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
-                                  // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
-                                  // pageController.animateToPage(
-                                  pageController.jumpToPage(
-                                    i,
-                                    // duration: const Duration(milliseconds: 500),
-                                    // curve: Curves.easeInOut,
-                                  );
-                                },
-                                child: AnimatedScale(
-                                  duration: const Duration(milliseconds: 500),
-                                  scale: selectedIndex == i ? 1 : 0.7,
-                                  child: AnimatedOpacity(
+                                    currentLocation = snapshot.data![i].latLong ??
+                                        AppConstants.myLocation;
+                                    _animatedMapMove(currentLocation);
+                                    // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
+                                    // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
+                                    // pageController.animateToPage(
+                                    pageController.jumpToPage(
+                                      i,
+                                      // duration: const Duration(milliseconds: 500),
+                                      // curve: Curves.easeInOut,
+                                    );
+                                  },
+                                  child: AnimatedScale(
                                     duration: const Duration(milliseconds: 500),
-                                    opacity: selectedIndex == i ? 1 : 0.5,
-                                    child: SvgPicture.asset(
-                                      // snapshot.data![i].markerSVGModel,
-                                      "assets/icons/map_marker.svg",
+                                    scale: selectedIndex == i ? 1 : 0.7,
+                                    child: AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 500),
+                                      opacity: selectedIndex == i ? 1 : 0.5,
+                                      child: SvgPicture.asset(
+                                        // snapshot.data![i].markerSVGModel,
+                                        "assets/icons/map_marker.svg",
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-                //todo uncomment
-                // bottomPopup(snapshot),
-              ],
-            );
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  //todo uncomment
+                  // bottomPopup(snapshot),
+                ],
+              )
+            ];
           }
           else {
             children = const <Widget>[
