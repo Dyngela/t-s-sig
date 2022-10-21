@@ -39,6 +39,9 @@ dependencies:
   flutter_svg: ^1.1.5
   location: ^4.2.0
   http: ^0.13.5
+  carousel_slider: ^4.1.1
+  getwidget: ^3.0.1
+  google_fonts: ^3.0.1
 
 #  location: 4.4.0
 #  flutter_polyline_points: 1.0.0
