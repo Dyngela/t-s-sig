@@ -190,10 +190,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     return (Visibility(
         visible: popupVisible,
         child: Positioned(
-          left: 0,
-          right: 0,
-          bottom: 2,
-          height: MediaQuery.of(context).size.height * 0.3,
+          left: 25,
+          right: 25,
+          bottom: 25,
+          // height: MediaQuery.of(context).size.height * 0.3,
+          height: 150,
           child: PageView.builder(
             controller: pageController,
             onPageChanged: (value) {
@@ -205,107 +206,193 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             itemCount: snapshot.data!.length,
             itemBuilder: (_, index) {
               final item = snapshot.data![index];
-              return Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  color: const Color.fromARGB(255, 30, 29, 29),
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const InterestDetails()));
-                    }),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount:
-                                      5, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    return const Icon(
-                                      Icons.star,
-                                      color: Colors.orange,
-                                    );
-                                  },
+
+              return GestureDetector(
+                  onTap: () => setState(() {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const InterestDetails()));
+                      }),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+                    child: Container(
+                        height: 200,
+                        width: 200,
+                        color: Colors.white,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15, top: 15, bottom: 15),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: Image.asset(
+                                    item.imageLink,
+                                    fit: BoxFit.fitWidth,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.title,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      item.address,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                item.imageLink,
-                                fit: BoxFit.cover,
                               ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                            width: 30,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.orange,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      popupVisible = false;
-                                    });
-                                  },
-                                )
-                              ],
-                            )),
-                        const SizedBox(width: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+                            Expanded(
+                                flex: 5,
+                                child: Stack(
+                                  children: [
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          IconButton(
+                                            splashColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+                                            icon: const Icon(
+                                              Icons.close,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                popupVisible = false;
+                                                selectedIndex = -1;
+                                              });
+                                            },
+                                          ),
+                                        ]),
+                                    Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 15, right: 5, bottom: 15),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.only(
+                                                  top: 20),
+                                              child: const Text(
+                                                "Ferme-Auberge du Ried du grand nord",
+                                                overflow: TextOverflow.ellipsis,
+                                                softWrap: true,
+                                                maxLines: 2,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const Text(
+                                              "2 avenue de l'Europe, 67300 Schiltigheim",
+                                              overflow: TextOverflow.ellipsis,
+                                              softWrap: false,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w100,
+                                              ),
+                                            ),
+                                            Expanded(
+                                                child: Row(
+                                              children: [
+                                                ListView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  shrinkWrap: true,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 0.0),
+                                                  itemCount:
+                                                      2, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
+                                                  itemBuilder:
+                                                      (BuildContext context,
+                                                          int index) {
+                                                    return const Icon(
+                                                      Icons.star,
+                                                      size: 20,
+                                                      color: Colors.orange,
+                                                    );
+                                                  },
+                                                ),
+                                                ListView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  shrinkWrap: true,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 0.0),
+                                                  itemCount:
+                                                      3, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
+                                                  itemBuilder:
+                                                      (BuildContext context,
+                                                          int index) {
+                                                    return const Icon(
+                                                      Icons.star,
+                                                      size: 20,
+                                                      color: Color.fromARGB(
+                                                          255, 112, 110, 110),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            )),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                    child: Stack(
+                                                      children: <Widget>[
+                                                        Positioned.fill(
+                                                          child: Container(
+                                                            decoration:
+                                                                const BoxDecoration(
+                                                              gradient:
+                                                                  LinearGradient(
+                                                                colors: <Color>[
+                                                                  Color(
+                                                                      0xFF0D47A1),
+                                                                  Color(
+                                                                      0xFF1976D2),
+                                                                  Color(
+                                                                      0xFF42A5F5),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        TextButton(
+                                                          style: TextButton
+                                                              .styleFrom(
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(16.0),
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        16),
+                                                          ),
+                                                          onPressed: () {},
+                                                          child: const Text(
+                                                              'Itinéraires'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ]),
+                                          ],
+                                        ))
+                                  ],
+                                )),
+                          ],
+                        )),
+                  ));
             },
           ),
         )));
