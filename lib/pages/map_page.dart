@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sig/constant/app_constant.dart';
 import 'package:sig/mapping/PointOfInterests.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'InterestDetails.dart';
 
 class MapPage extends StatefulWidget {
@@ -56,70 +57,97 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 child: Stack(
                   children: [
                     FlutterMap(
-                      mapController: mapController,
-                      options: MapOptions(
-                        minZoom: 5,
-                        maxZoom: 18,
-                        zoom: 11,
-                        center: currentLocation,
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.app',
+                        mapController: mapController,
+                        options: MapOptions(
+                          minZoom: 5,
+                          maxZoom: 18,
+                          zoom: 11,
+                          center: currentLocation,
                         ),
-                        MarkerLayer(
-                          markers: [
-                            for (int i = 0; i < snapshot.data!.length; i++)
-                              Marker(
-                                height: 40,
-                                width: 40,
-                                point: snapshot.data![i].latLong,
-                                builder: (_) {
-                                  return GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        popupVisible = true;
-                                        selectedIndex = i;
-                                      });
-                                      await Future.delayed(
-                                          const Duration(milliseconds: 100),
-                                          () {});
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                          ),
+                          MarkerClusterLayerWidget(
+                            options: MarkerClusterLayerOptions(
+                              spiderfyCircleRadius: 80,
+                              spiderfySpiralDistanceMultiplier: 2,
+                              circleSpiralSwitchover: 12,
+                              maxClusterRadius: 120,
+                              rotate: true,
+                              size: const Size(40, 40),
+                              anchor: AnchorPos.align(AnchorAlign.center),
+                              fitBoundsOptions: const FitBoundsOptions(
+                                padding: EdgeInsets.all(50),
+                                maxZoom: 15,
+                              ),
+                              markers: [
+                                for (int i = 0; i < snapshot.data!.length; i++)
+                                  Marker(
+                                    height: 40,
+                                    width: 40,
+                                    point: snapshot.data![i].latLong,
+                                    builder: (_) {
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          setState(() {
+                                            popupVisible = true;
+                                            selectedIndex = i;
+                                          });
+                                          await Future.delayed(
+                                              const Duration(milliseconds: 100),
+                                              () {});
 
-                                      currentLocation =
-                                          snapshot.data![i].latLong;
-                                      _animatedMapMove(currentLocation);
-                                      // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
-                                      // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
-                                      // pageController.animateToPage(
-                                      pageController.jumpToPage(
-                                        i,
-                                        // duration: const Duration(milliseconds: 500),
-                                        // curve: Curves.easeInOut,
+                                          currentLocation =
+                                              snapshot.data![i].latLong;
+                                          _animatedMapMove(currentLocation);
+                                          // TODO sans le delay on ne peut pas jump d'un pop up a l'autre correctement.
+                                          // Avec on a un effet bizarre ou on a d'abord le pop up de l'index 0 puis celui qui nous intéresse
+                                          // pageController.animateToPage(
+                                          pageController.jumpToPage(
+                                            i,
+                                            // duration: const Duration(milliseconds: 500),
+                                            // curve: Curves.easeInOut,
+                                          );
+                                        },
+                                        child: AnimatedScale(
+                                          duration:
+                                              const Duration(milliseconds: 500),
+                                          scale: selectedIndex == i ? 1 : 1,
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 500),
+                                            opacity:
+                                                selectedIndex == i ? 1 : 0.7,
+                                            child: SvgPicture.asset(
+                                              // snapshot.data![i].markerSVGModel,
+                                              "assets/icons/map_marker.svg",
+                                            ),
+                                          ),
+                                        ),
                                       );
                                     },
-                                    child: AnimatedScale(
-                                      duration:
-                                          const Duration(milliseconds: 500),
-                                      scale: selectedIndex == i ? 1 : 0.7,
-                                      child: AnimatedOpacity(
-                                        duration:
-                                            const Duration(milliseconds: 500),
-                                        opacity: selectedIndex == i ? 1 : 0.5,
-                                        child: SvgPicture.asset(
-                                          // snapshot.data![i].markerSVGModel,
-                                          "assets/icons/map_marker.svg",
-                                        ),
-                                      ),
+                                  ),
+                              ],
+                              builder: (context, markers) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: Colors.blue),
+                                  child: Center(
+                                    child: Text(
+                                      markers.length.toString(),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                     ),
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ]),
                     //todo uncomment
                     bottomPopup(snapshot),
                   ],
