@@ -33,7 +33,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     return Scaffold(
       body: FutureBuilder<List<PointOfInterests>>(
         future:
-            fetchPointOfInterests("http://localhost:8000/api/v1/restaurants"),
+            //fetchPointOfInterests("http://10.0.2.2:8000/api/v1/restaurants"), // for android emulator
+            fetchPointOfInterests(
+                "http://localhost:8000/api/v1/restaurants"), // for chrome emulator
         builder: (BuildContext context,
             AsyncSnapshot<List<PointOfInterests>> snapshot) {
           List<Widget> children = [];
@@ -71,6 +73,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             userAgentPackageName: 'com.example.app',
                           ),
                           MarkerClusterLayerWidget(
+                            /* cluster map marker */
                             options: MarkerClusterLayerOptions(
                               spiderfyCircleRadius: 80,
                               spiderfySpiralDistanceMultiplier: 2,
@@ -149,6 +152,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                           ),
                         ]),
                     //todo uncomment
+                    topSearchBar(snapshot),
                     bottomPopup(snapshot),
                   ],
                 ),
@@ -214,215 +218,205 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     controller.forward();
   }
 
+  Visibility topSearchBar(AsyncSnapshot<List<PointOfInterests>> snapshot) {
+    return (Visibility(
+      visible: popupVisible,
+      child: Positioned(
+        top: 15,
+        left: 30,
+        right: 30,
+        height: 37,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+          child: Container(color: Colors.white),
+        ),
+      ),
+    ));
+  }
+
+// Bottom popup that will be shown when we click on a marker
   Visibility bottomPopup(AsyncSnapshot<List<PointOfInterests>> snapshot) {
     return (Visibility(
-        visible: popupVisible,
-        child: Positioned(
-          left: 25,
-          right: 25,
-          bottom: 25,
-          // height: MediaQuery.of(context).size.height * 0.3,
-          height: 150,
-          child: PageView.builder(
-            controller: pageController,
-            onPageChanged: (value) {
-              selectedIndex = value;
-              currentLocation = snapshot.data![value].latLong;
-              _animatedMapMove(currentLocation);
-              setState(() {});
-            },
-            itemCount: snapshot.data!.length,
-            itemBuilder: (_, index) {
-              final item = snapshot.data![index];
+      visible: popupVisible,
+      child: Positioned(
+        left: 25,
+        right: 25,
+        bottom: 25,
+        // height: MediaQuery.of(context).size.height * 0.3,
+        height: 150,
+        child: PageView.builder(
+          controller: pageController,
+          onPageChanged: (value) {
+            selectedIndex = value;
+            currentLocation = snapshot.data![value].latLong;
+            _animatedMapMove(currentLocation);
+            setState(() {});
+          },
+          itemCount: snapshot.data!.length,
+          itemBuilder: (_, index) {
+            final item = snapshot.data![index];
 
-              return GestureDetector(
-                  onTap: () => setState(() {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const InterestDetails()));
-                      }),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(25.0)),
-                    child: Container(
-                        height: 200,
-                        width: 200,
-                        color: Colors.white,
-                        child: Row(
+            return GestureDetector(
+              onTap: () => setState(() {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const InterestDetails()));
+              }),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+                child: Container(
+                  height: 200,
+                  width: 200,
+                  color: Colors.white,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          padding: const EdgeInsets.only(
+                              left: 15, top: 15, bottom: 15),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: Image.asset(
+                              item.imageLink,
+                              fit: BoxFit.fitWidth,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: Stack(
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: Container(
-                                padding: const EdgeInsets.only(
-                                    left: 15, top: 15, bottom: 15),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.asset(
-                                    item.imageLink,
-                                    fit: BoxFit.fitWidth,
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  IconButton(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    splashColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        popupVisible = false;
+                                        selectedIndex = -1;
+                                      });
+                                    },
                                   ),
-                                ),
+                                ]),
+                            Container(
+                              margin: const EdgeInsets.only(
+                                  left: 15, right: 5, bottom: 4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.only(top: 20),
+                                    child: const Text(
+                                      "Ferme-Auberge du ried",
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      maxLines: 2,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Text(
+                                    "2 avenue de l'Europe, 67300 Schiltigheim",
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  // Expanded(
+                                  //     child: Row(
+                                  //   children: [
+                                  //     ListView.builder(
+                                  //       scrollDirection:
+                                  //           Axis.horizontal,
+                                  //       shrinkWrap: true,
+                                  //       padding:
+                                  //           const EdgeInsets.only(
+                                  //               top: 0.0),
+                                  //       itemCount:
+                                  //           2, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
+                                  //       itemBuilder:
+                                  //           (BuildContext context,
+                                  //               int index) {
+                                  //         return const Icon(
+                                  //           Icons.star,
+                                  //           size: 20,
+                                  //           color: Colors.orange,
+                                  //         );
+                                  //       },
+                                  //     ),
+                                  //     ListView.builder(
+                                  //       scrollDirection:
+                                  //           Axis.horizontal,
+                                  //       shrinkWrap: true,
+                                  //       padding:
+                                  //           const EdgeInsets.only(
+                                  //               top: 0.0),
+                                  //       itemCount:
+                                  //           3, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
+                                  //       itemBuilder:
+                                  //           (BuildContext context,
+                                  //               int index) {
+                                  //         return const Icon(
+                                  //           Icons.star,
+                                  //           size: 20,
+                                  //           color: Color.fromARGB(
+                                  //               255, 112, 110, 110),
+                                  //         );
+                                  //       },
+                                  //     ),
+                                  //   ],
+                                  // )),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      12), // <-- Radius
+                                            ),
+                                          ),
+                                          child: const Text('Itinéraire'),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Expanded(
-                                flex: 5,
-                                child: Stack(
-                                  children: [
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          IconButton(
-                                            splashColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            icon: const Icon(
-                                              Icons.close,
-                                              color: Colors.black,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                popupVisible = false;
-                                                selectedIndex = -1;
-                                              });
-                                            },
-                                          ),
-                                        ]),
-                                    Container(
-                                        margin: const EdgeInsets.only(
-                                            left: 15, right: 5, bottom: 15),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 20),
-                                              child: const Text(
-                                                "Ferme-Auberge du Ried du grand nord",
-                                                overflow: TextOverflow.ellipsis,
-                                                softWrap: true,
-                                                maxLines: 2,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            const Text(
-                                              "2 avenue de l'Europe, 67300 Schiltigheim",
-                                              overflow: TextOverflow.ellipsis,
-                                              softWrap: false,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w100,
-                                              ),
-                                            ),
-                                            Expanded(
-                                                child: Row(
-                                              children: [
-                                                ListView.builder(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  shrinkWrap: true,
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 0.0),
-                                                  itemCount:
-                                                      2, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                          int index) {
-                                                    return const Icon(
-                                                      Icons.star,
-                                                      size: 20,
-                                                      color: Colors.orange,
-                                                    );
-                                                  },
-                                                ),
-                                                ListView.builder(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  shrinkWrap: true,
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 0.0),
-                                                  itemCount:
-                                                      3, // todo add it to models eventually to be check with manager, it's the list of stars on the left hand
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                          int index) {
-                                                    return const Icon(
-                                                      Icons.star,
-                                                      size: 20,
-                                                      color: Color.fromARGB(
-                                                          255, 112, 110, 110),
-                                                    );
-                                                  },
-                                                ),
-                                              ],
-                                            )),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                    child: Stack(
-                                                      children: <Widget>[
-                                                        Positioned.fill(
-                                                          child: Container(
-                                                            decoration:
-                                                                const BoxDecoration(
-                                                              gradient:
-                                                                  LinearGradient(
-                                                                colors: <Color>[
-                                                                  Color(
-                                                                      0xFF0D47A1),
-                                                                  Color(
-                                                                      0xFF1976D2),
-                                                                  Color(
-                                                                      0xFF42A5F5),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        TextButton(
-                                                          style: TextButton
-                                                              .styleFrom(
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(16.0),
-                                                            textStyle:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        16),
-                                                          ),
-                                                          onPressed: () {},
-                                                          child: const Text(
-                                                              'Itinéraires'),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ]),
-                                          ],
-                                        ))
-                                  ],
-                                )),
                           ],
-                        )),
-                  ));
-            },
-          ),
-        )));
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ));
   }
 }
