@@ -14,11 +14,11 @@ late BuildContext _context;
 int currentIndex = 0;
 
 final List<String> imgList = [
-  '../../assets/images/restaurant_1.jpg',
-  '../../assets/images/restaurant_2.jpg',
-  '../../assets/images/restaurant_3.jpg',
-  '../../assets/images/restaurant_4.jpg',
-  '../../assets/images/restaurant_5.jpg'
+  'assets/images/restaurant_1.jpg',
+  'assets/images/restaurant_2.jpg',
+  'assets/images/restaurant_3.jpg',
+  'assets/images/restaurant_4.jpg',
+  'assets/images/restaurant_5.jpg'
 ];
 
 class _InterestDetailsState extends State<InterestDetails> {
@@ -72,7 +72,7 @@ Widget headerSection = Container(
             );
             const MapPage();
           },
-          child: Image.asset('../../assets/icons/icon_go_back.png'),
+          child: Image.asset('assets/icons/icon_go_back.png'),
         ),
         const SizedBox(width: 10),
         const Text(
@@ -144,7 +144,7 @@ Widget infoSection = Container(
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(width: 3),
-              Image.asset('../../assets/icons/icon_star.png')
+              Image.asset('assets/icons/icon_star.png')
             ],
           )
         ]),
