@@ -8,17 +8,14 @@ class MarkerMapping {
   final String description = "";
   final String title = "";
   final String address = "";
-  final String markerSVGModel= "";
+  final String markerSVGModel = "";
 
   const MarkerMapping(
-      {
-        required latitude,
-        required longitude,
-        required imageLink,
-        required description,
-        required title,
-        required address,
-        required markerSVGModel
-      });
+      {required latitude,
+      required longitude,
+      required imageLink,
+      required description,
+      required title,
+      required address,
+      required markerSVGModel});
 }
-
